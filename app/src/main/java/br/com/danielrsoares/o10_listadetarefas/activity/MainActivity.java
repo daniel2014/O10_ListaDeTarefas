@@ -2,8 +2,17 @@ package br.com.danielrsoares.o10_listadetarefas.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.LinearLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -13,16 +22,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import br.com.danielrsoares.o10_listadetarefas.R;
 import br.com.danielrsoares.o10_listadetarefas.adapter.TarefaAdapter;
 import br.com.danielrsoares.o10_listadetarefas.helper.RecyclerItemClickListener;
+import br.com.danielrsoares.o10_listadetarefas.helper.TarefaDAO;
 import br.com.danielrsoares.o10_listadetarefas.model.Tarefa;
-
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.AdapterView;
-import android.widget.LinearLayout;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +41,16 @@ public class MainActivity extends AppCompatActivity {
         //Configurarar RecyclerView
         recyclerView = findViewById(R.id.recyclerView);
 
+        /*
+        DbHelper db = new DbHelper(getApplicationContext());
+
+        ContentValues cv = new ContentValues(); // Basicamente defini como se fosse um Array
+        cv.put("nome", "Teste"); // Dentro da tabela tarefas será inserido esses valores
+
+        db.getWritableDatabase().insert("tarefas", null, cv); //Salvar Escrita no Banco de Dados
+        */
+
+
         //Configurar Evento de Clique
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(
@@ -49,10 +60,25 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onItemClick(View view, int position) {
 
+                                //Recuperar Tarefa para Edição
+                                Tarefa tarefaSelecionada = listTarefas.get(position);
+
+                                //Enviar Tarefa para Adicionar Tarefa
+                                Intent intent = new Intent(MainActivity.this, AdicionarTarefaActivity.class);
+                                intent.putExtra("tarefaSelecionada", tarefaSelecionada);
+                                startActivity(intent);
+
+
+                                 Snackbar.make(view, "Clicado Rápido - Posição: " + position, Snackbar.LENGTH_SHORT)
+                                    .setAction("Action", null).show();
+
                             }
 
                             @Override
                             public void onLongItemClick(View view, int position) {
+
+                                 Snackbar.make(view, "Clique Longo - Posição: " + position, Snackbar.LENGTH_SHORT)
+                                    .setAction("Action", null).show();
 
                             }
 
@@ -76,18 +102,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void carregarRecyclerView(){
+    public void carregarListaTarefas(){
 
         //Exibir Lista de Tarefas no RecyclerView
 
-        //Listar tarefas
-        Tarefa tarefa1 = new Tarefa();
-        tarefa1.setNometarefa("Ir ao Mercado");
-        listTarefas.add(tarefa1);
+        TarefaDAO tarefaDAO = new TarefaDAO(getApplicationContext());
+        listTarefas = tarefaDAO.listar();
 
-        Tarefa tarefa2 = new Tarefa();
-        tarefa2.setNometarefa("Ir a Feira");
-        listTarefas.add(tarefa2);
+
 
         //Adapter
         tarefaAdapter = new TarefaAdapter(listTarefas);
@@ -102,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        carregarRecyclerView();
+        carregarListaTarefas();
         super.onStart();
     }
 
